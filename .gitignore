@@ -1,0 +1,61 @@
+# GNU global tags
+GTAGS
+GRTAGS
+GSYMS
+GPATH
+tags
+
+# Python byte-compile file
+__pycache__/
+*.py[co]
+
+# editor backup files
+*~
+\#*\#
+build/
+data/
+script/
+utest/data/
+installer/
+# backup files
+*.bak
+
+# Eclipse
+.cproject
+.project
+.pydevproject
+.settings/
+
+
+
+# CLion
+.idea/
+cmake-build-*/
+
+# vs code
+.vscode
+
+# clang-format
+#.clang-format
+
+# ROSBag files
+*.bag
+*.pcd
+*.pcap
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+
+# gvim ycm
+#.ycm_extra_conf.py
+
+# some_lidar hardware config file
+*.csv
+
+
+# directory
+lib/

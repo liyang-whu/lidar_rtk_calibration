@@ -1,0 +1,4 @@
+#define LIDAR_RTK_CALIB_VERSION_MAJOR @lidar_rtk_calib_VERSION_MAJOR@
+#define LIDAR_RTK_CALIB_VERSION_MINOR @lidar_rtk_calib_VERSION_MINOR@
+#define LIDAR_RTK_CALIB_VERSION_PATCH @lidar_rtk_calib_VERSION_PATCH@
+

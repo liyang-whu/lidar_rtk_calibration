@@ -6,8 +6,8 @@
       <param name="rtk_topic" value="/navsat/fix" />
       <param name="rtk_pose_file" value="/home/qcl/data/lidar_rtk/rtk_pose.pcd" />
 
-  <rosparam param="trans">[1.96232, -0.0113276, 0]</rosparam>
-  <rosparam param="quat">[0.999967, 0.0047607, -0.0019678, -0.00631764]</rosparam>
+      <rosparam param="trans">[1.96232, -0.0113276, 0]</rosparam>
+      <rosparam param="quat">[0.999967, 0.0047607, -0.0019678, -0.00631764]</rosparam>
 
       <!--<rosparam param="trans">[2.05,0.22, 0]</rosparam>-->
       <!--<rosparam param="quat">[0.999966, -0.00104859, 0.00095165, -0.00807533]</rosparam>-->
@@ -18,6 +18,5 @@
       <param name="map_step" type="int"  value="50" />
       <!--输出pcd文件的数量-->
       <param name="pcd_num" type="int"  value="50" />
-
     </node>
   </launch>

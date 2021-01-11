@@ -32,13 +32,10 @@ http://docs.ros.org/lunar/api/geometry_msgs/html/msg/PoseWithCovarianceStamped.h
 catkin_ws/src目录下
 
 ```shell
-#sdk package
-git clone git@192.168.1.20:calibration/lidar_rtk_calib.git
-ln -s lidar_rtk_calib/rs_lidar_rtk_calibration rs_lidar_rtk_calibration_link
+git clone http://192.168.10.192:8800/quchunlei/lidar_rtk_calib.git
 cd ../
 catkin build
-source ./devel/setup.zsh 
-#编译成功后，cmake自动复制so文件到rs_lidar_rtk_calibration/lib文件夹下
+source devel/setup.zsh 
 ```
 
 ### 数据采集

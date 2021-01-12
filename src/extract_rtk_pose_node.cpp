@@ -69,7 +69,7 @@ int main(int argc, char** argv)
 
   bool rtk_mapping_flag = true;
 
-  std::string lidar_topic = "/some_lidar_points";
+  std::string lidar_topic = "/rslidar_points";
   std::vector<float> tranl(3, 0);
   std::vector<float> quat_v(4, 0);  // w,x,y,z
   Eigen::Affine3f tf = Eigen::Affine3f::Identity();
@@ -166,7 +166,7 @@ int main(int argc, char** argv)
         Eigen::Affine3f tf_to_rtk;
         tf_to_rtk = aff_rtk.matrix() * tf.matrix();
         pcl::transformPointCloud(*cloud, cloud_out, tf_to_rtk);
-        std::string fname = "/home/glm/workspace/temp/" + std::to_string(lidar_msg_num) + ".pcd";
+        std::string fname = "/home/qcl/bag/tmp/" + std::to_string(lidar_msg_num) + ".pcd";
         pcl::io::savePCDFileASCII(fname, cloud_out);
       }
       lidar_msg_num++;

@@ -79,7 +79,7 @@ Visualization Manager:
       Size (Pixels): 2
       Size (m): 0.00999999978
       Style: Points
-      Topic: /some_lidar_points
+      Topic: /rslidar_points
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
@@ -164,7 +164,7 @@ Visualization Manager:
       Length: 1
       Name: Axes
       Radius: 0.100000001
-      Reference Frame: some_lidar
+      Reference Frame: rslidar
       Value: true
     - Alpha: 1
       Autocompute Intensity Bounds: true
@@ -191,7 +191,7 @@ Visualization Manager:
       Size (Pixels): 2
       Size (m): 0.00999999978
       Style: Points
-      Topic: /middle/some_lidar_points
+      Topic: /middle/rslidar_points
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true

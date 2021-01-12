@@ -78,7 +78,7 @@ Visualization Manager:
       Size (Pixels): 2
       Size (m): 0.00999999978
       Style: Points
-      Topic: /middle/some_lidar_points
+      Topic: /middle/rslidar_points
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true

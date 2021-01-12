@@ -53,7 +53,7 @@ ENV/
 # gvim ycm
 #.ycm_extra_conf.py
 
-# some_lidar hardware config file
+# lidar hardware config file
 *.csv
 
 

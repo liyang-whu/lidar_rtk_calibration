@@ -2,12 +2,9 @@
 <package>
   <name>lidar_rtk_calib_sdk</name>
   <version>0.1.0</version>
-  <description>The lidar and imu calibration</description>
-  <maintainer email="glmhit@126.com">guoleiming</maintainer>
-  <maintainer email="zhangbaoxian_sti@126.com">zhangbaoxian</maintainer>
+  <description>The lidar and rtk calibration</description>
+  <maintainer email="quchunlei@china-icv.cn">Lequeint Qu</maintainer>
   <license>TODO</license>
-  <author email="glmhit@126.com">guoleiming</author>
-  <author email="zhangbaoxian_sti@126.com">zhangbaoxian</author>
 
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>roscpp</build_depend>

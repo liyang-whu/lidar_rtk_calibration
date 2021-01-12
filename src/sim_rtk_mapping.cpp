@@ -11,7 +11,7 @@ void lidarCallback(const sensor_msgs::PointCloud2::ConstPtr lidar_msg)
     cloud->at(i).y *= 0.5;
     cloud->at(i).z *= 0.5;
   }
-  cloud->header.frame_id = "some_lidar";
+  cloud->header.frame_id = "rslidar";
   sensor_msgs::PointCloud2 output;
 
   pcl::toROSMsg(*cloud.get(), output);
@@ -73,5 +73,5 @@ void rtkCallback(const sensor_msgs::NavSatFixConstPtr gps_msg)
   broadcaster_laser_base->sendTransform(
       tf::StampedTransform(tf::Transform(tf::Quaternion(quat_v[1], quat_v[2], quat_v[3], quat_v[0]),
                                          tf::Vector3(tranl[0], tranl[1], tranl[2])),
-                           stamp, "base_link", "some_lidar"));
+                           stamp, "base_link", "rslidar"));
 }

@@ -128,6 +128,19 @@ target_link_libraries(tf_b_to_a_tool ${PCL_LIBRARIES} ${OpenCV_LIBS})
 add_executable(relative_pose_tool src/relative_pose_tool.cpp)
 target_link_libraries(relative_pose_tool ${PCL_LIBRARIES} ${OpenCV_LIBS})
 
+add_executable(rs_lidar_rtk_calibtraion_node src/rs_lidar_rtk_calib_node.cpp)
+target_link_libraries(rs_lidar_rtk_calibtraion_node 
+  ${LIB_NAME} 
+  ${catkin_LIBRARIES}
+  ${PCL_LIBRARIES}
+  ${GLOG_LIBRARIES} 
+  ${CERES_LIBRARIES}
+  ${OpenCV_LIBS}
+  )
+
+add_executable(sim_rtk_mapping_node src/sim_rtk_mapping_node.cpp)
+target_link_libraries(sim_rtk_mapping_node ${PCL_LIBRARIES} ${catkin_LIBRARIES} ${LIB_NAME} ${OpenCV_LIBS})
+
 # for create lib
 # get_target_property(LIB_LOCATION ${LIB_NAME} LOCATION)
 # add_custom_command(TARGET ${LIB_NAME} POST_BUILD

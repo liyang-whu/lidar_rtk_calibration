@@ -41,11 +41,15 @@ int main(int argc, char** argv)
   std::cout << "open file " << argv[1] << std::endl;
   pcl::PointCloud<pcl::PointNormal> pcloud;
   pcl::PointNormal point;
+  int index =0;
   while (getline(ifs, line))
   {
     float roll, pitch, yaw;
     std::stringstream sstream(line);
     sstream >> temp >> point.x >> point.y >> point.z >> roll >> pitch >> yaw;
+    std::cout<<"line "<<index<<" ----"<<std::endl;
+    std::cout << "x: "<<point.x<<std::endl;
+    index++;
     Eigen::Affine3f trans = Eigen::Affine3f::Identity();
     trans.prerotate(Eigen::AngleAxisf(roll, Eigen::Vector3f::UnitX()));
     trans.prerotate(Eigen::AngleAxisf(pitch, Eigen::Vector3f::UnitY()));

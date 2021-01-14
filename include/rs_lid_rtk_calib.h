@@ -24,8 +24,7 @@ class LidRtkCaib
 {
 public:
   LidRtkCaib();
-  /**打印系统依赖和本工具的版本
-   */
+  //打印系统依赖和本工具的版本
   void version();
   void setParas(const std::string f_bag, const std::string rtk_t, const std::string imu_t, const std::string lidar_t);
   // f_lidar_pose input, lidar pose file

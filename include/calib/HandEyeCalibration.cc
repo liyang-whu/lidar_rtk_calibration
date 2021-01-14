@@ -117,9 +117,9 @@ void HandEyeCalibration::estimateHandEye(
 
   // auto dq = estimateHandEyeScrewInitial(T, planarMotion);
   Eigen::Quaterniond q(1, 0, 0, 0);
-  Eigen::Vector3d t;
-  t << 0, 0, 0;
-  robosense::slam::Pose3d pose3d_tf;
+  Eigen::Vector3d p;
+  p << 0, 0, 0;
+  robosense::slam::Pose3d pose3d_tf(p,q);
 
   tf = pose3d_tf.toMatrix();
   if (mVerbose)
@@ -145,6 +145,7 @@ void HandEyeCalibration::estimateHandEyeRefine(
     const std::vector<robosense::slam::Pose3d, Eigen::aligned_allocator<robosense::slam::Pose3d>>& pose3d_b,
     ceres::Solver::Summary& summary)
 {
+std::cout<<"estimateHandEyeRefine Hello"<<std::endl;
   Eigen::Matrix<double, 6, 6> covariance = Eigen::Matrix<double, 6, 6>::Zero();
   covariance(0, 0) = NOISE_X * NOISE_X;
   covariance(1, 1) = NOISE_Y * NOISE_Y;
@@ -156,25 +157,27 @@ void HandEyeCalibration::estimateHandEyeRefine(
 
   ceres::Problem problem;
   ceres::LocalParameterization* quaternionParameterization = new ceres::EigenQuaternionParameterization;
-
+std::cout<<"estimateHandEyeRefine Hello 00000"<<std::endl;
   for (size_t i = 0; i < pose3d_a.size(); i++)
   {
     // ceres deletes the objects allocated here for the user
     ceres::CostFunction* costFunction = PoseError::Create(pose3d_a[i], pose3d_b[i], sqrt_information);
 
-    problem.AddResidualBlock(costFunction, NULL, pose3d_tf.p.data(),
-                             pose3d_tf.q.coeffs().data());  // ceres deletes the object allocated here for the user
+    problem.AddResidualBlock(costFunction, nullptr, pose3d_tf.p.data(), pose3d_tf.q.coeffs().data());  // ceres deletes the object allocated here for the user
 
     problem.SetParameterization(pose3d_tf.q.coeffs().data(), quaternionParameterization);
   }
+std::cout<<"estimateHandEyeRefine Hello 11111"<<std::endl;
 
   ceres::Solver::Options options;
   options.linear_solver_type = ceres::DENSE_QR;
   options.jacobi_scaling = true;
   options.max_num_iterations = 500;
+std::cout<<"estimateHandEyeRefine Hello 22222"<<std::endl;
 
   // ceres::Solver::Summary summary;
   ceres::Solve(options, &problem, &summary);
+std::cout<<"estimateHandEyeRefine Hello 333333"<<std::endl;
 
   if (mVerbose)
   {

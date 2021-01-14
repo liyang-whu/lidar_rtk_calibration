@@ -4,7 +4,7 @@
              <param name="imu_topic" value="/imu/data" />
              <param name="lidar_topic" value="/rslidar_points" />
              <param name="rtk_topic" value="/navsat/fix" />
-             <param name="lidar_pose_file" value="/home/qcl/bag/lidar_pose.pcd" />
+             <param name="lidar_pose_file" value="/home/qcl/work_code/calibration/lidar_rtk_calib_ws/mapping_pose.pcd" />
              <param name="save_file" value="/home/qcl/bag/trans.yaml" />
     </node>
 </launch>

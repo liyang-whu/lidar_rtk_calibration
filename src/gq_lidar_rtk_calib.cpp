@@ -8,8 +8,9 @@
 #define foreach BOOST_FOREACH
 #define DEBUG 0
 #define SAVE_RTK_LIDAR_POSE 1
-std::string dir_test = "/home/glm/workspace/temp/";
+std::string dir_test = "/home/qcl/work_code/calibration/lidar_rtk_calib_ws/";
 using namespace robosense;
+
 template <typename Input>
 Eigen::Vector3d eigenRotToEigenVector3dAngleAxis(Input eigenQuat)
 {
@@ -54,20 +55,25 @@ void LidRtkCaib::setLidarPose(const std::string f_lidar_pose, const int frame_st
   fname_lidar_pose_ = f_lidar_pose;
   lidar_start_frame_ = frame_start;
 }
+
 Eigen::Affine3d LidRtkCaib::calib()
 {
   getRtkPose();
   readLidarPose();
   synTopic();
+  // calibration 
   robosense::HandEyeCalibration calib;
   Eigen::Matrix4d result;
   ceres::Solver::Summary summary;
   calib.setVerbose(true);
+  std::cout <<"ev_rtk_pose: "<<ev_rtk_pose_.size()<<" ev_lidar_pose: "<<ev_lidar_pose_.size()<<std::endl;
   calib.estimateHandEye(ev_rtk_pose_, ev_lidar_pose_, result, summary);
   std::cout << "Lidar Frame relative to RTK Frame\n" << result << std::endl;
+
   Eigen::Transform<double, 3, Eigen::Affine> resultAffine(result);
   Eigen::Vector3d xyz = resultAffine.translation();
   std::cout << "Translation (x,y,z) : " << xyz(0) << ", " << xyz(1) << ", " << xyz(2) << std::endl;
+  
   Eigen::Quaternion<double> quaternionResult(resultAffine.rotation());
   std::stringstream ss;
   ss << quaternionResult.w() << ", " << quaternionResult.x() << ", " << quaternionResult.y() << ", "
@@ -80,6 +86,7 @@ Eigen::Affine3d LidRtkCaib::calib()
   quaternionResult = Eigen::Quaternion<double>(resultAffineInv.rotation());
   std::cerr << "Inverted rotation (w,x,y,z): " << quaternionResult.w() << " " << quaternionResult.x() << " "
             << quaternionResult.y() << " " << quaternionResult.z() << std::endl;
+
   return resultAffine;
 }
 /* * 数据对齐，格式化数据
@@ -87,6 +94,7 @@ Eigen::Affine3d LidRtkCaib::calib()
 void LidRtkCaib::synTopic()
 {
   std::size_t pair_n = std::min(v_rtk_pose_.size(), v_lidar_pose_.size());
+  std::cout<<"sync topic pair_n: "<<pair_n<<std::endl;
   // TODO synchronize by time
   for (std::size_t i = 0; i < pair_n; ++i)
   {
@@ -207,7 +215,6 @@ void LidRtkCaib::getRtkPose()
       rtk_pose.pose.covariance[7] = rtk_msg->position_covariance[4];
       rtk_pose.pose.covariance[14] = rtk_msg->position_covariance[8];
       // std::cout << x << ", " << y << ", " << z << "; ";
-      // v_rtk_pose_->push_back(p);
     }
 
     sensor_msgs::PointCloud2ConstPtr l_cloud = m.instantiate<sensor_msgs::PointCloud2>();
@@ -252,18 +259,18 @@ void LidRtkCaib::readLidarPose()
     return;
   }
   std::size_t min_size = std::min(v_lidar_pose_.size(), lidar_pose->size());
-  for (std::size_t i = 0; i < min_size; i++)
+  for (std::size_t i = 0; i < min_size && i+ lidar_start_frame_ < lidar_pose->size(); i++)
   {
-    v_lidar_pose_.at(i).pose.pose.position.x = lidar_pose->at(i).x;
-    v_lidar_pose_.at(i).pose.pose.position.y = lidar_pose->at(i).y;
-    v_lidar_pose_.at(i).pose.pose.position.z = lidar_pose->at(i).z;
-    v_lidar_pose_.at(i).pose.pose.orientation.x = lidar_pose->at(i).normal_x;
-    v_lidar_pose_.at(i).pose.pose.orientation.y = lidar_pose->at(i).normal_y;
-    v_lidar_pose_.at(i).pose.pose.orientation.z = lidar_pose->at(i).normal_z;
-    v_lidar_pose_.at(i).pose.pose.orientation.w = lidar_pose->at(i).curvature;
+    v_lidar_pose_.at(i).pose.pose.position.x = lidar_pose->at(i+lidar_start_frame_).x;
+    v_lidar_pose_.at(i).pose.pose.position.y = lidar_pose->at(i+lidar_start_frame_).y;
+    v_lidar_pose_.at(i).pose.pose.position.z = lidar_pose->at(i+lidar_start_frame_).z;
+    v_lidar_pose_.at(i).pose.pose.orientation.x = lidar_pose->at(i+lidar_start_frame_).normal_x;
+    v_lidar_pose_.at(i).pose.pose.orientation.y = lidar_pose->at(i+lidar_start_frame_).normal_y;
+    v_lidar_pose_.at(i).pose.pose.orientation.z = lidar_pose->at(i+lidar_start_frame_).normal_z;
+    v_lidar_pose_.at(i).pose.pose.orientation.w = lidar_pose->at(i+lidar_start_frame_).curvature;
   }
   v_lidar_pose_.resize(min_size);
   std::cout << "lidar size " << min_size << std::endl;
-
+  // std::cout << "rtk size "<< v_rtk_pose_.size() << std::endl;
   std::cout << "getLidarPose end" << std::endl;
 }

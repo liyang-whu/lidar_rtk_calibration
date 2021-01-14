@@ -92,6 +92,14 @@ run_calib.launch
 | lidar_pose_file | lidar每一帧的位姿 | 从rs_mapping 工具包得到 |
 | save_file       | 输出数据          | 使用绝对路径            |
 
+其中lidar_pose_file的格式为：
+
+|pos_x|pos_y|pos_z|ori_x|ori_y|ori_z|ori_w|
+|:--:|:--:|:--:|:--:|:--:|:--:|:--:|
+
+-----------------------------------------
+
+
 ![1549952183206](assets/1549952183206.png)
 
 计算过程需要几十秒，计算结束

@@ -5,7 +5,7 @@
 
 #include "ceres/rotation.h"
 
-namespace camodocal
+namespace cicv
 {
 template <typename T>
 T square(const T& m)

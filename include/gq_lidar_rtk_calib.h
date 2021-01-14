@@ -15,7 +15,7 @@
 #include <vector>
 #include <iostream>
 
-namespace robosense
+namespace cicv
 {
 typedef std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d>> eigenVector;
 typedef std::vector<Eigen::Affine3d, Eigen::aligned_allocator<Eigen::Affine3d>> EigenAffineVector;
@@ -52,4 +52,4 @@ private:
   EigenAffineVector ev_lidar_pose_;
 };
 
-}  // namespace robosense
+}  // namespace cicv

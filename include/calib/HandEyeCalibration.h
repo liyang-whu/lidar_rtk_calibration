@@ -4,9 +4,9 @@
 #include <Eigen/Eigen>
 #include <Eigen/StdVector>
 #include <ceres/ceres.h>
-#include "types.h"
+#include "DualQuaternion.h"
 
-namespace robosense
+namespace cicv
 {
 /// @brief Implements Hand Eye Calibration which determines an unknown 3d
 /// transform using two stacks of known transforms.
@@ -62,7 +62,7 @@ public:
   /// size N
   ///
   /// @pre all sets of parameters must have the same number of elements
-  /*  void estimateHandEyeScrew(const std::vector<Eigen::Vector3d,
+  /* static void estimateHandEyeScrew(const std::vector<Eigen::Vector3d,
    * Eigen::aligned_allocator<Eigen::Vector3d> >& rvecs1, */
   /*                                  const std::vector<Eigen::Vector3d,
    * Eigen::aligned_allocator<Eigen::Vector3d> >& tvecs1, */
@@ -73,42 +73,47 @@ public:
   /*                                  Eigen::Matrix4d& H_12, bool planarMotion
    * = false); */
 
-  // void estimateHandEye(
-  // const std::vector<robosense::slam::Pose3d, Eigen::aligned_allocator<robosense::slam::Pose3d>>& pose3d_a,
-  // const std::vector<robosense::slam::Pose3d, Eigen::aligned_allocator<robosense::slam::Pose3d>>& pose3d_b,
-  // Eigen::Matrix4d& H_12, bool planarMotion = false);
+  static void
+  estimateHandEyeScrew(const std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d>>& rvecs1,
+                       const std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d>>& tvecs1,
+                       const std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d>>& rvecs2,
+                       const std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d>>& tvecs2,
+                       Eigen::Matrix4d& H_12, bool planarMotion = false);
 
-  /** @T_a a的位姿轨迹，T_a, T_b数据按顺序一一对应
-   *  @tf a relative to b
-   * */
-  void estimateHandEye(const std::vector<Eigen::Affine3d, Eigen::aligned_allocator<Eigen::Affine3d>>& T_a,
-                       const std::vector<Eigen::Affine3d, Eigen::aligned_allocator<Eigen::Affine3d>>& T_b,
-                       Eigen::Matrix4d& tf, ceres::Solver::Summary& summary);
+  static void
+  estimateHandEyeScrew(const std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d>>& rvecs1,
+                       const std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d>>& tvecs1,
+                       const std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d>>& rvecs2,
+                       const std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d>>& tvecs2,
+                       Eigen::Matrix4d& H_12, ceres::Solver::Summary& summary, bool planarMotion = false);
 
-  void setVerbose(bool on = true);
+  static void setVerbose(bool on = true);
 
 private:
+  /// @brief solve ax^2 + bx + c = 0
+  static bool solveQuadraticEquation(double a, double b, double c, double& x1, double& x2);
+
   /// @brief Initial hand-eye screw estimate using fast but coarse
   /// Eigen::JacobiSVD
-  robosense::slam::Pose3d estimateHandEyeInitial(Eigen::MatrixXd& T, bool planarMotion);
+  static DualQuaterniond estimateHandEyeScrewInitial(Eigen::MatrixXd& T, bool planarMotion);
 
   /// @brief Refine hand-eye screw estimate using initial coarse estimate and
   /// Ceres Solver Library.
-  // void estimateHandEyeRefine(
-  // robosense::slam::Pose3d& dq,
-  // const std::vector<robosense::slam::Pose3d, Eigen::aligned_allocator<robosense::slam::Pose3d>>& pose3d_a,
-  // const std::vector<robosense::slam::Pose3d, Eigen::aligned_allocator<robosense::slam::Pose3d>>& pose3d_b);
+  static void estimateHandEyeScrewRefine(
+      DualQuaterniond& dq, const std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d>>& rvecs1,
+      const std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d>>& tvecs1,
+      const std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d>>& rvecs2,
+      const std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d>>& tvecs2);
 
-  void estimateHandEyeRefine(
-      robosense::slam::Pose3d& dq,
-      const std::vector<robosense::slam::Pose3d, Eigen::aligned_allocator<robosense::slam::Pose3d>>& pose3d_a,
-      const std::vector<robosense::slam::Pose3d, Eigen::aligned_allocator<robosense::slam::Pose3d>>& pose3d_b,
+  static void estimateHandEyeScrewRefine(
+      DualQuaterniond& dq, const std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d>>& rvecs1,
+      const std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d>>& tvecs1,
+      const std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d>>& rvecs2,
+      const std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d>>& tvecs2,
       ceres::Solver::Summary& summary);
 
-  bool mVerbose;
-  std::vector<robosense::slam::Pose3d, Eigen::aligned_allocator<robosense::slam::Pose3d>> pose_a_;
-  std::vector<robosense::slam::Pose3d, Eigen::aligned_allocator<robosense::slam::Pose3d>> pose_b_;
+  static bool mVerbose;
 };
-}  // namespace robosense
+}  // namespace camodocal
 
 #endif

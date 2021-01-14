@@ -1,0 +1,21 @@
+<launch>
+  <node pkg="lidar_rtk_calib_sdk" name="extract_rtk_pose_node" type="extract_rtk_pose_node" output="screen" >
+    <param name="calib_bag_file" value="/home/qcl/bag/lidar_rtk_calib.bag" />
+    <param name="imu_topic" value="/imu/data" />
+      <param name="rtk_topic" value="/navsat/fix" />
+      <param name="rtk_pose_file" value="/home/qcl/bag/rtk_pose.pcd" />
+
+      <rosparam param="trans">[0.909875, -0.134702, 0]</rosparam>
+      <rosparam param="quat">[0.999725 0.0184967 -0.00233223 -0.0142111]</rosparam>
+
+      <!--<rosparam param="trans">[2.05,0.22, 0]</rosparam>-->
+      <!--<rosparam param="quat">[0.999966, -0.00104859, 0.00095165, -0.00807533]</rosparam>-->
+
+        <!--如果使用RTK制图功能，设置以下几项，将导出坐标变换后的pcd文件-->
+      <param name="rtk_mapping" type="bool" value="true" />
+      <param name="lidar_topic" value="/rslidar_points" />
+      <param name="map_step" type="int"  value="50" />
+      <!--输出pcd文件的数量-->
+      <param name="pcd_num" type="int"  value="50" />
+    </node>
+  </launch>

@@ -15,7 +15,7 @@
 #include <vector>
 #include <iostream>
 
-namespace robosense
+namespace cicv
 {
 typedef std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d>> eigenVector;
 typedef std::vector<Eigen::Affine3d, Eigen::aligned_allocator<Eigen::Affine3d>> EigenAffineVector;
@@ -36,6 +36,7 @@ private:
   void getRtkPose();
   void readLidarPose();
   void synTopic();
+  Eigen::Affine3d estimate();
 
   // 标定原始数据
   std::string fname_bag_;
@@ -51,5 +52,5 @@ private:
   EigenAffineVector ev_lidar_pose_;
 };
 
-}  // namespace robosense
+}  // namespace cicv
 

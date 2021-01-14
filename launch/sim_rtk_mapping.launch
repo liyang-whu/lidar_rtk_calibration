@@ -1,22 +1,19 @@
 <launch>
-  <node pkg="lidar_rtk_calib_sdk" name="extract_rtk_pose_node" type="extract_rtk_pose_node" output="screen" >
-    <param name="calib_bag_file" value="/home/qcl/bag/lidar_rtk_calib.bag" />
+  <node  name="sim_rtk_mapping_node" pkg="lidar_rtk_calib_sdk" type="sim_rtk_mapping_node" output="screen" required="true" >
     <param name="imu_topic" value="/imu/data" />
-      <!--<rosparam param="rtk_init_position">[22.5841843005, 113.961071064, 13.9264004985]</rosparam>-->
-      <param name="rtk_topic" value="/navsat/fix" />
-      <param name="rtk_pose_file" value="/home/qcl/bag/rtk_pose.pcd" />
+    <param name="rtk_topic" value="/navsat/fix" />
+    <param name="lidar_topic" value="/rslidar_points" />
+    <param name="lidar_frame" value="rslidar" />
+    <param name="car_frame" value="base_link" />
+  <rosparam param="trans">[0.909875, -0.134702, 0]</rosparam>
+  <rosparam param="quat">[ 0.999725, -0.0184967, 0.00233223, 0.0142111]</rosparam>
 
-      <rosparam param="trans">[1.96232, -0.0113276, 0]</rosparam>
-      <rosparam param="quat">[0.999967, 0.0047607, -0.0019678, -0.00631764]</rosparam>
+ <!--<rosparam param="trans">[1.98396 ,-0.206832 ,  -0] </rosparam>-->
+  <!--<rosparam param="quat">[0.999903, 0.0101219, 0.00167243, 0.00943612] < /rosparam>-->
 
-      <!--<rosparam param="trans">[2.05,0.22, 0]</rosparam>-->
-      <!--<rosparam param="quat">[0.999966, -0.00104859, 0.00095165, -0.00807533]</rosparam>-->
+</node>
+  <!--<node pkg="rosbag" type="play" name="rosbag" args=" -d 0.5 -r 1  /media/glm/DataDisk/lidar_imu/2018-12-27/_cali_8zixing_rtk.bag"/>-->
+  <node pkg="rosbag" type="play" name="rosbag" args=" -d 0.5 -r 1  /home/qcl/bag/lidar_rtk_calib.bag"/>
 
-        <!--如果使用RTK制图功能，设置以下几项，将导出坐标变换后的pcd文件-->
-      <param name="rtk_mapping" type="bool" value="true" />
-      <param name="lidar_topic" value="/rslidar_points" />
-      <param name="map_step" type="int"  value="50" />
-      <!--输出pcd文件的数量-->
-      <param name="pcd_num" type="int"  value="50" />
-    </node>
-  </launch>
+  <node name="rviz" pkg="rviz" type="rviz"  args="-d $(find lidar_rtk_calib_sdk)/rviz/sim_rtk_mapping.rviz" />
+</launch>

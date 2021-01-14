@@ -99,11 +99,10 @@ message("lib name " ${LIB_NAME})
 # STATIC SHARED
 add_library(${LIB_NAME}
             SHARED
-            src/gq_lidar_rtk_calib.cpp
+            src/rs_lidar_rtk_calib.cpp
             include/geodetic_conv.hpp
             src/sim_rtk_mapping.cpp
             include/calib/HandEyeCalibration.cc 
-            include/calib/type.cpp
     )
 target_link_libraries("${LIB_NAME}"
                       ${catkin_LIBRARIES}
@@ -118,12 +117,11 @@ target_link_libraries(extract_rtk_pose_node ${PCL_LIBRARIES} ${catkin_LIBRARIES}
 add_executable(txt2pcd "src/txt2pcd.cpp")
 target_link_libraries(txt2pcd ${PCL_LIBRARIES})
 
-add_executable(tf_use_quat test/tf_use_quat.cpp)
-target_link_libraries(tf_use_quat ${PCL_LIBRARIES})
+# add_executable(tf_use_quat test/tf_use_quat.cpp)
+# target_link_libraries(tf_use_quat ${PCL_LIBRARIES})
 
-add_executable(tf_b_to_a_tool src/tf_b_to_a_tool.cpp)
-
-target_link_libraries(tf_b_to_a_tool ${PCL_LIBRARIES} ${OpenCV_LIBS})
+# add_executable(tf_b_to_a_tool src/tf_b_to_a_tool.cpp)
+# target_link_libraries(tf_b_to_a_tool ${PCL_LIBRARIES} ${OpenCV_LIBS})
 
 add_executable(relative_pose_tool src/relative_pose_tool.cpp)
 target_link_libraries(relative_pose_tool ${PCL_LIBRARIES} ${OpenCV_LIBS})

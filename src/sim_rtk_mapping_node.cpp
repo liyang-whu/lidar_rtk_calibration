@@ -29,6 +29,10 @@ int main(int argc, char** argv)
   ros::Subscriber imu_sub = nh.subscribe(imu_topic, 100, imuCallback);
   ros::Subscriber lidar_sub = nh.subscribe(lidar_topic, 100, lidarCallback);
   ros::Rate rate(10);
-  ros::spin();
+  while(ros::ok())
+  {
+    ros::spinOnce();
+  }
+  // ros::spin();
   return 0;
 }

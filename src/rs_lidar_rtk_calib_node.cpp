@@ -4,7 +4,7 @@
 #include <eigen3/Eigen/Geometry>
 #include <opencv2/core/eigen.hpp>
 
-using namespace robosense;
+using namespace cicv;
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "lidar_rtk_calib");

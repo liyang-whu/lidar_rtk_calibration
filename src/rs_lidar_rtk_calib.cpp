@@ -132,7 +132,7 @@ Eigen::Affine3d LidRtkCaib::estimate()
 
   cicv::HandEyeCalibration calib;
   Eigen::Matrix4d result;
-  calib.setVerbose(false);
+  calib.setVerbose(true);
   calib.estimateHandEyeScrew(rvecsRtk, tvecsRtk, rvecsLidarl, tvecsLidarl, result, false);
   std::cout << "Lidar Frame relative to RTK Frame\n" << result << std::endl;
   Eigen::Affine3d resultAffine(result);

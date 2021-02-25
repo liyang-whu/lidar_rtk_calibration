@@ -374,7 +374,7 @@ void HandEyeCalibration::estimateHandEyeScrewRefine(
 
   if (mVerbose)
   {
-    std::cout << summary.BriefReport() << std::endl;
+    std::cout << summary.FullReport() << std::endl;
   }
 
   Eigen::Quaterniond q(p[0], p[1], p[2], p[3]);
@@ -418,7 +418,7 @@ void HandEyeCalibration::estimateHandEyeScrewRefine(
 
   if (mVerbose)
   {
-    std::cout << summary.BriefReport() << std::endl;
+    std::cout << summary.FullReport() << std::endl;
   }
 
   Eigen::Quaterniond q(p[0], p[1], p[2], p[3]);

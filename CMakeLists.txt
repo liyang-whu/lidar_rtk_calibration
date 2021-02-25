@@ -99,7 +99,7 @@ message("lib name " ${LIB_NAME})
 # STATIC SHARED
 add_library(${LIB_NAME}
             SHARED
-            src/rs_lidar_rtk_calib.cpp
+            src/gq_lidar_rtk_calib.cpp
             include/geodetic_conv.hpp
             src/sim_rtk_mapping.cpp
             include/calib/HandEyeCalibration.cc 
@@ -126,8 +126,8 @@ target_link_libraries(txt2pcd ${PCL_LIBRARIES})
 add_executable(relative_pose_tool src/relative_pose_tool.cpp)
 target_link_libraries(relative_pose_tool ${PCL_LIBRARIES} ${OpenCV_LIBS})
 
-add_executable(rs_lidar_rtk_calibtraion_node src/rs_lidar_rtk_calib_node.cpp)
-target_link_libraries(rs_lidar_rtk_calibtraion_node 
+add_executable(gq_lidar_rtk_calibtraion_node src/gq_lidar_rtk_calib_node.cpp)
+target_link_libraries(gq_lidar_rtk_calibtraion_node 
   ${LIB_NAME} 
   ${catkin_LIBRARIES}
   ${PCL_LIBRARIES}

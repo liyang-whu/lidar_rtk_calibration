@@ -1,5 +1,5 @@
 <launch>
-    <node pkg="lidar_rtk_calib_sdk" name="rs_lidar_rtk_calibtraion_node" type="rs_lidar_rtk_calibtraion_node" output="screen" >
+    <node pkg="lidar_rtk_calib_sdk" name="gq_lidar_rtk_calibtraion_node" type="gq_lidar_rtk_calibtraion_node" output="screen" >
              <param name="calib_bag_file" value="/home/qcl/bag/lidar_rtk_calib.bag" />
              <param name="imu_topic" value="/imu/data" />
              <param name="lidar_topic" value="/rslidar_points" />

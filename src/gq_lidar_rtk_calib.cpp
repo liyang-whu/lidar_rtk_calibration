@@ -8,6 +8,7 @@
 #define foreach BOOST_FOREACH
 #define DEBUG 0
 #define SAVE_RTK_LIDAR_POSE 1
+int static const MIN_CALIB_PAIR_NO = 10;
 std::string dir_test = "/home/qcl/work_code/calibration/lidar_rtk_calib_ws/";
 using namespace cicv;
 
@@ -61,32 +62,94 @@ Eigen::Affine3d LidRtkCaib::calib()
   getRtkPose();
   readLidarPose();
   synTopic();
-  // calibration 
+  // calibration
+  // cicv::HandEyeCalibration calib;
+  // Eigen::Matrix4d result;
+  // ceres::Solver::Summary summary;
+  // calib.setVerbose(true);
+  // std::cout <<"ev_rtk_pose: "<<ev_rtk_pose_.size()<<" ev_lidar_pose: "<<ev_lidar_pose_.size()<<std::endl;
+  // calib.estimateHandEye(ev_rtk_pose_, ev_lidar_pose_, result, summary);
+  // std::cout << "Lidar Frame relative to RTK Frame\n" << result << std::endl;
+
+  // Eigen::Transform<double, 3, Eigen::Affine> resultAffine(result);
+  // Eigen::Vector3d xyz = resultAffine.translation();
+  // std::cout << "Translation (x,y,z) : " << xyz(0) << ", " << xyz(1) << ", " << xyz(2) << std::endl;
+
+  // Eigen::Quaternion<double> quaternionResult(resultAffine.rotation());
+  // std::stringstream ss;
+  // ss << quaternionResult.w() << ", " << quaternionResult.x() << ", " << quaternionResult.y() << ", "
+  //    << quaternionResult.z() << std::endl;
+  // std::cout << "Rotation (w,x,y,z): " << ss.str() << std::endl;
+
+  // Eigen::Transform<double, 3, Eigen::Affine> resultAffineInv = resultAffine.inverse();
+  // xyz = resultAffineInv.translation();
+  // std::cout << "Inverted Translation (x,y,z) : " << xyz(0) << ", " << xyz(1) << ", " << xyz(2) << std::endl;
+  // quaternionResult = Eigen::Quaternion<double>(resultAffineInv.rotation());
+  // std::cerr << "Inverted rotation (w,x,y,z): " << quaternionResult.w() << " " << quaternionResult.x() << " "
+  //           << quaternionResult.y() << " " << quaternionResult.z() << std::endl;
+
+  if (ev_lidar_pose_.size() > MIN_CALIB_PAIR_NO)
+  {
+    return estimate();
+  }
+  return Eigen::Affine3d::Identity();
+}
+
+Eigen::Affine3d LidRtkCaib::estimate()
+{
+  auto t1_it = ev_rtk_pose_.begin();
+  auto t2_it = ev_lidar_pose_.begin();
+
+  Eigen::Affine3d firstRTKInverse = Eigen::Affine3d::Identity(), firstLidarInverse = Eigen::Affine3d::Identity();
+  eigenVector tvecsRtk, rvecsRtk, tvecsLidarl, rvecsLidarl;
+
+  bool firstTransform = true;
+
+  for (std::size_t i = 0; i < ev_rtk_pose_.size(); ++i, ++t1_it, ++t2_it)
+  {
+    auto& eigenRTK = *t1_it;
+    auto& eigenLidar = *t2_it;
+    if (firstTransform)
+    {
+      firstRTKInverse = eigenRTK.inverse();
+      firstLidarInverse = eigenLidar.inverse();
+      // ROS_INFO("Adding first transformation.");
+      firstTransform = false;
+    }
+    else
+    {
+      Eigen::Affine3d rtkPoseinFirstTipBase = firstRTKInverse * eigenRTK;
+      Eigen::Affine3d lidarInFirstLidarlBase = firstLidarInverse * eigenLidar;
+
+      rvecsRtk.push_back(eigenRotToEigenVector3dAngleAxis(rtkPoseinFirstTipBase.rotation()));
+      tvecsRtk.push_back(rtkPoseinFirstTipBase.translation());
+
+      rvecsLidarl.push_back(eigenRotToEigenVector3dAngleAxis(lidarInFirstLidarlBase.rotation()));
+      tvecsLidarl.push_back(lidarInFirstLidarlBase.translation());
+    }
+  }
+
   cicv::HandEyeCalibration calib;
   Eigen::Matrix4d result;
-  ceres::Solver::Summary summary;
   calib.setVerbose(true);
-  std::cout <<"ev_rtk_pose: "<<ev_rtk_pose_.size()<<" ev_lidar_pose: "<<ev_lidar_pose_.size()<<std::endl;
-  calib.estimateHandEye(ev_rtk_pose_, ev_lidar_pose_, result, summary);
+  calib.estimateHandEyeScrew(rvecsRtk, tvecsRtk, rvecsLidarl, tvecsLidarl, result, false);
   std::cout << "Lidar Frame relative to RTK Frame\n" << result << std::endl;
+  Eigen::Affine3d resultAffine(result);
 
-  Eigen::Transform<double, 3, Eigen::Affine> resultAffine(result);
   Eigen::Vector3d xyz = resultAffine.translation();
   std::cout << "Translation (x,y,z) : " << xyz(0) << ", " << xyz(1) << ", " << xyz(2) << std::endl;
-  
-  Eigen::Quaternion<double> quaternionResult(resultAffine.rotation());
+  Eigen::Quaterniond quaternionResult(resultAffine.rotation());
   std::stringstream ss;
   ss << quaternionResult.w() << ", " << quaternionResult.x() << ", " << quaternionResult.y() << ", "
      << quaternionResult.z() << std::endl;
   std::cout << "Rotation (w,x,y,z): " << ss.str() << std::endl;
 
-  Eigen::Transform<double, 3, Eigen::Affine> resultAffineInv = resultAffine.inverse();
+  Eigen::Affine3d resultAffineInv = resultAffine.inverse();
   xyz = resultAffineInv.translation();
   std::cout << "Inverted Translation (x,y,z) : " << xyz(0) << ", " << xyz(1) << ", " << xyz(2) << std::endl;
-  quaternionResult = Eigen::Quaternion<double>(resultAffineInv.rotation());
+  quaternionResult = Eigen::Quaterniond(resultAffineInv.rotation());
   std::cerr << "Inverted rotation (w,x,y,z): " << quaternionResult.w() << " " << quaternionResult.x() << " "
             << quaternionResult.y() << " " << quaternionResult.z() << std::endl;
-
   return resultAffine;
 }
 /* * 数据对齐，格式化数据
@@ -94,7 +157,7 @@ Eigen::Affine3d LidRtkCaib::calib()
 void LidRtkCaib::synTopic()
 {
   std::size_t pair_n = std::min(v_rtk_pose_.size(), v_lidar_pose_.size());
-  std::cout<<"sync topic pair_n: "<<pair_n<<std::endl;
+  std::cout << "sync topic pair_n: " << pair_n << std::endl;
   // TODO synchronize by time
   for (std::size_t i = 0; i < pair_n; ++i)
   {
@@ -259,15 +322,15 @@ void LidRtkCaib::readLidarPose()
     return;
   }
   std::size_t min_size = std::min(v_lidar_pose_.size(), lidar_pose->size());
-  for (std::size_t i = 0; i < min_size && i+ lidar_start_frame_ < lidar_pose->size(); i++)
+  for (std::size_t i = 0; i < min_size && i + lidar_start_frame_ < lidar_pose->size(); i++)
   {
-    v_lidar_pose_.at(i).pose.pose.position.x = lidar_pose->at(i+lidar_start_frame_).x;
-    v_lidar_pose_.at(i).pose.pose.position.y = lidar_pose->at(i+lidar_start_frame_).y;
-    v_lidar_pose_.at(i).pose.pose.position.z = lidar_pose->at(i+lidar_start_frame_).z;
-    v_lidar_pose_.at(i).pose.pose.orientation.x = lidar_pose->at(i+lidar_start_frame_).normal_x;
-    v_lidar_pose_.at(i).pose.pose.orientation.y = lidar_pose->at(i+lidar_start_frame_).normal_y;
-    v_lidar_pose_.at(i).pose.pose.orientation.z = lidar_pose->at(i+lidar_start_frame_).normal_z;
-    v_lidar_pose_.at(i).pose.pose.orientation.w = lidar_pose->at(i+lidar_start_frame_).curvature;
+    v_lidar_pose_.at(i).pose.pose.position.x = lidar_pose->at(i + lidar_start_frame_).x;
+    v_lidar_pose_.at(i).pose.pose.position.y = lidar_pose->at(i + lidar_start_frame_).y;
+    v_lidar_pose_.at(i).pose.pose.position.z = lidar_pose->at(i + lidar_start_frame_).z;
+    v_lidar_pose_.at(i).pose.pose.orientation.x = lidar_pose->at(i + lidar_start_frame_).normal_x;
+    v_lidar_pose_.at(i).pose.pose.orientation.y = lidar_pose->at(i + lidar_start_frame_).normal_y;
+    v_lidar_pose_.at(i).pose.pose.orientation.z = lidar_pose->at(i + lidar_start_frame_).normal_z;
+    v_lidar_pose_.at(i).pose.pose.orientation.w = lidar_pose->at(i + lidar_start_frame_).curvature;
   }
   v_lidar_pose_.resize(min_size);
   std::cout << "lidar size " << min_size << std::endl;

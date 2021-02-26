@@ -5,9 +5,8 @@
     <param name="lidar_topic" value="/rslidar_points" />
     <param name="lidar_frame" value="rslidar" />
     <param name="car_frame" value="base_link" />
-  <rosparam param="trans">[0.909875, -0.134702, 0]</rosparam>
-  <rosparam param="quat">[ 0.999725, -0.0184967, 0.00233223, 0.0142111]</rosparam>
-
+  <rosparam param="trans">[0.75851693078860948916, -0.025081143011501823986, -0.078820635740153938142]</rosparam>
+  <rosparam param="quat">[ 0.999779, -0.0169407, -0.00135539, 0.0123428]</rosparam>
  <!--<rosparam param="trans">[1.98396 ,-0.206832 ,  -0] </rosparam>-->
   <!--<rosparam param="quat">[0.999903, 0.0101219, 0.00167243, 0.00943612] < /rosparam>-->
 

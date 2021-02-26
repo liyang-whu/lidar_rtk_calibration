@@ -158,11 +158,11 @@ void LidRtkCaib::synTopic()
 {
   std::size_t pair_n = std::min(v_rtk_pose_.size(), v_lidar_pose_.size());
   std::cout << "sync topic pair_n: " << pair_n << std::endl;
-  // TODO synchronize by time
+
   for (std::size_t i = 0; i < pair_n; ++i)
   {
-    Eigen::Affine3d aff;
-    aff.setIdentity();
+    Eigen::Affine3d aff_rtk;
+    aff_rtk.setIdentity();
     Eigen::Vector3d v;
     v[0] = v_rtk_pose_.at(i).pose.pose.position.x;
     v[1] = v_rtk_pose_.at(i).pose.pose.position.y;
@@ -172,11 +172,11 @@ void LidRtkCaib::synTopic()
     qua.y() = v_rtk_pose_.at(i).pose.pose.orientation.y;
     qua.z() = v_rtk_pose_.at(i).pose.pose.orientation.z;
     qua.w() = v_rtk_pose_.at(i).pose.pose.orientation.w;
-    aff.prerotate(qua);
-    aff.pretranslate(v);
-    ev_rtk_pose_.push_back(aff);
+    aff_rtk.prerotate(qua);
+    aff_rtk.pretranslate(v);
 
-    aff.setIdentity();
+    Eigen::Affine3d aff_lidar;
+    aff_lidar.setIdentity();
     v[0] = v_lidar_pose_.at(i).pose.pose.position.x;
     v[1] = v_lidar_pose_.at(i).pose.pose.position.y;
     v[2] = v_lidar_pose_.at(i).pose.pose.position.z;
@@ -184,9 +184,10 @@ void LidRtkCaib::synTopic()
     qua.y() = v_lidar_pose_.at(i).pose.pose.orientation.y;
     qua.z() = v_lidar_pose_.at(i).pose.pose.orientation.z;
     qua.w() = v_lidar_pose_.at(i).pose.pose.orientation.w;
-    aff.prerotate(qua);
-    aff.pretranslate(v);
-    ev_lidar_pose_.push_back(aff);
+    aff_lidar.prerotate(qua);
+    aff_lidar.pretranslate(v);
+    ev_rtk_pose_.push_back(aff_rtk);
+    ev_lidar_pose_.push_back(aff_lidar);
   }
 #if SAVE_RTK_LIDAR_POSE
   cv::FileStorage fs(dir_test + "rtk_lidar_matrix.yaml", cv::FileStorage::WRITE);
@@ -231,13 +232,14 @@ void LidRtkCaib::getRtkPose()
   geometry_msgs::PoseWithCovarianceStamped rtk_pose;
   geometry_msgs::PoseWithCovarianceStamped lidar_pose;
 
+  int diff_time_size = 0;
   foreach (rosbag::MessageInstance const m, view)
   {
     sensor_msgs::ImuConstPtr imu_msg = m.instantiate<sensor_msgs::Imu>();
     if (imu_msg != NULL)
     {
-      double t_now = imu_msg->header.stamp.sec;
-
+      double t_now = imu_msg->header.stamp.toSec();
+      // 检查IMU的时间
       // cout << t_now << " " << imu_t_last_ << "\t" << t_now - imu_t_last_ << std::endl;
       // ROS_ASSERT(t_now - imu_t_last_ >= 1e-3);
       imu_t_last_ = t_now;
@@ -253,7 +255,8 @@ void LidRtkCaib::getRtkPose()
     sensor_msgs::NavSatFixConstPtr rtk_msg = m.instantiate<sensor_msgs::NavSatFix>();
     if (rtk_msg != NULL)
     {
-      double t_now = rtk_msg->header.stamp.sec;
+      double t_now = rtk_msg->header.stamp.toSec();
+      // 检查RTK的时间
       // cout << t_now << " " << rtk_t_last_ << "\t" << t_now - rtk_t_last_ << std::endl;
       // ROS_ASSERT(t_now - rtk_t_last_ >= 0);
       rtk_t_last_ = t_now;
@@ -283,17 +286,27 @@ void LidRtkCaib::getRtkPose()
     sensor_msgs::PointCloud2ConstPtr l_cloud = m.instantiate<sensor_msgs::PointCloud2>();
     if (l_cloud != NULL)
     {
-      double t_now = l_cloud->header.stamp.sec;
+      double t_now = l_cloud->header.stamp.toSec();
+      // 检查雷达的时间
       // ROS_ASSERT(t_now - lidar_t_last_ >= 0);
       lidar_t_last_ = t_now;
-      // ROS_ASSERT(fabs(imu_t_last_ - lidar_t_last_) < 0.02);
       size_lidar++;
       lidar_pose.header = l_cloud->header;
       lidar_pose.header.frame_id = "odom";
-      if (size_lidar >= lidar_start_frame_)
+      if (size_lidar > lidar_start_frame_)
       {
-        v_rtk_pose_.push_back(rtk_pose);  //保存最近的rtk数据
-        v_lidar_pose_.push_back(lidar_pose);
+        if (std::fabs(lidar_t_last_ - rtk_t_last_) < 0.02 && std::fabs(lidar_t_last_ - imu_t_last_) < 0.02)
+        {
+          v_rtk_pose_.push_back(rtk_pose);
+          v_lidar_pose_.push_back(lidar_pose);
+        }
+        else
+        {
+          ros::Time a_little_time(0.001);
+          lidar_pose.header.stamp = a_little_time;  // lidar时间戳设置为0
+          v_lidar_pose_.push_back(lidar_pose);
+          diff_time_size++;
+        }
       }
     }
   }
@@ -303,6 +316,7 @@ void LidRtkCaib::getRtkPose()
             << lidar_topic_ << "\t" << size_lidar << " msg \n"
             << rtk_topic_ << "\t" << size_rtk << " msg \n"
             << std::endl;
+  std::cout << "diff time size: " << diff_time_size << std::endl;
 #if DEBUG
   bag.open(dir_test + "rtk_pose.bag", rosbag::bagmode::Write);
   for (std::size_t i = 0; i < v_rtk_pose_.size(); i++)
@@ -322,18 +336,29 @@ void LidRtkCaib::readLidarPose()
     return;
   }
   std::size_t min_size = std::min(v_lidar_pose_.size(), lidar_pose->size());
+  std::size_t new_size = 0;
+  std::cout << "lidar raw size " << v_lidar_pose_.size() << std::endl;
+#if DEBUG
+  std::cout << "lidar pose size " << lidar_pose->size() << std::endl;
+  std::cout << "min size " << min_size << std::endl;
+#endif
   for (std::size_t i = 0; i < min_size && i + lidar_start_frame_ < lidar_pose->size(); i++)
   {
-    v_lidar_pose_.at(i).pose.pose.position.x = lidar_pose->at(i + lidar_start_frame_).x;
-    v_lidar_pose_.at(i).pose.pose.position.y = lidar_pose->at(i + lidar_start_frame_).y;
-    v_lidar_pose_.at(i).pose.pose.position.z = lidar_pose->at(i + lidar_start_frame_).z;
-    v_lidar_pose_.at(i).pose.pose.orientation.x = lidar_pose->at(i + lidar_start_frame_).normal_x;
-    v_lidar_pose_.at(i).pose.pose.orientation.y = lidar_pose->at(i + lidar_start_frame_).normal_y;
-    v_lidar_pose_.at(i).pose.pose.orientation.z = lidar_pose->at(i + lidar_start_frame_).normal_z;
-    v_lidar_pose_.at(i).pose.pose.orientation.w = lidar_pose->at(i + lidar_start_frame_).curvature;
+    // std::cout << "time: " << std::setprecision(20) << v_lidar_pose_.at(i).header.stamp.toSec() << std::endl;
+    if (v_lidar_pose_.at(i).header.stamp.toSec() > 1.0)
+    {
+      v_lidar_pose_.at(new_size).pose.pose.position.x = lidar_pose->at(i + lidar_start_frame_).x;
+      v_lidar_pose_.at(new_size).pose.pose.position.y = lidar_pose->at(i + lidar_start_frame_).y;
+      v_lidar_pose_.at(new_size).pose.pose.position.z = lidar_pose->at(i + lidar_start_frame_).z;
+      v_lidar_pose_.at(new_size).pose.pose.orientation.x = lidar_pose->at(i + lidar_start_frame_).normal_x;
+      v_lidar_pose_.at(new_size).pose.pose.orientation.y = lidar_pose->at(i + lidar_start_frame_).normal_y;
+      v_lidar_pose_.at(new_size).pose.pose.orientation.z = lidar_pose->at(i + lidar_start_frame_).normal_z;
+      v_lidar_pose_.at(new_size).pose.pose.orientation.w = lidar_pose->at(i + lidar_start_frame_).curvature;
+      new_size++;
+    }
   }
-  v_lidar_pose_.resize(min_size);
-  std::cout << "lidar size " << min_size << std::endl;
-  // std::cout << "rtk size "<< v_rtk_pose_.size() << std::endl;
+  v_lidar_pose_.resize(new_size);
+  std::cout << "lidar new size " << new_size << std::endl;
+  std::cout << "rtk size " << v_rtk_pose_.size() << std::endl;
   std::cout << "getLidarPose end" << std::endl;
 }
